@@ -1,5 +1,8 @@
 package com.example.pagerandrv;
 
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
 public class Produto {
     String nome, sabor;
     float preco;
@@ -32,5 +35,13 @@ public class Produto {
 
     public void setPreco(float preco) {
         this.preco = preco;
+    }
+
+    public void salvar(){
+        DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
+        reference.child("Produtos").child(nome).setValue(this); /*
+        nome do produto, é o path e declaras as childs, o setValue seta preco e tipo a partir do nome,
+        o mais correto era ter um ID, mas aqui está sendo usado o nome mesmo
+        */
     }
 }

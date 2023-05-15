@@ -95,6 +95,7 @@ public class Quarto extends Fragment {
             Produto i = new Produto(textnome, textcateg, floatpreco);
             listaProdutos.add(i);
             Primeiro.listaProdutos = listaProdutos;
+            i.salvar(); //envia para o firebase o produto
         }
     }
 }
