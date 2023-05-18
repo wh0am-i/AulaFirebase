@@ -8,9 +8,18 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 
@@ -29,10 +38,11 @@ public class Quarto extends Fragment {
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
-    static ArrayList<Produto> listaProdutos;
     Button cadastrar;
+    adaptador2 adapter;
     TextView Preco, Nome;
     EditText categoria;
+    ;
 
 
     public Quarto() {
@@ -85,17 +95,34 @@ public class Quarto extends Fragment {
         return v;
     }
 
+    public void verificaDB(Produto p) {
+        DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
+        reference.child("Produtos").child(p.getNome()).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if (!snapshot.exists()) {
+                    p.salvar(); //envia para o firebase o produto
+                } else {
+                    Toast.makeText(getContext(), "O produto já foi cadastrado.", Toast.LENGTH_SHORT).show();
+                }
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+    }
+
     public void cadastrar() {
         String textnome = Nome.getText().toString();
         String textcateg = categoria.getText().toString();
-        listaProdutos = Primeiro.listaProdutos;
-
         if (!textnome.isEmpty() && !textcateg.isEmpty() && !Preco.getText().toString().isEmpty()) {
             float floatpreco = Float.parseFloat(Preco.getText().toString());
             Produto i = new Produto(textnome, textcateg, floatpreco);
-            listaProdutos.add(i);
-            Primeiro.listaProdutos = listaProdutos;
-            i.salvar(); //envia para o firebase o produto
+            verificaDB(i);
+        }
+        else {
+            Toast.makeText(getContext(), "Preencha todos os campos.", Toast.LENGTH_SHORT).show();
         }
     }
 }

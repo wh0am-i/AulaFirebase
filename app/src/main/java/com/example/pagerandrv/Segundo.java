@@ -9,11 +9,18 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 
 import androidx.fragment.app.Fragment;
+
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 
@@ -33,8 +40,7 @@ public class Segundo extends Fragment {
     private String mParam1;
     private String mParam2;
 
-    static ArrayList<Produto> listaProdutos;
-    ArrayList<Produto> listaTemp = new ArrayList<>();
+    ArrayList<Produto> listaProdutos = new ArrayList<>();;
     Button pesquisar;
     RecyclerView recycler;
 
@@ -78,7 +84,6 @@ public class Segundo extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_segundo, container, false);
-        listaProdutos = Primeiro.listaProdutos;
         Preco = v.findViewById(R.id.Preco);
         Nome = v.findViewById(R.id.Nome);
         categoria = v.findViewById(R.id.categoria);
@@ -92,18 +97,16 @@ public class Segundo extends Fragment {
         });
         recycler.setHasFixedSize(true); //terá um tamanho fixo
         recycler.setLayoutManager(new LinearLayoutManager(v.getContext())); //uma em cima da outra, linear
-        adapter = new adaptador2(v.getContext(), listaProdutos, new adaptador2.OnItemClickListener() {//isso aqui é a interface criada
-            //@Override
-            public void onItemClick(Produto p) { //onclick de cada cartão, num geral
-                Toast.makeText(v.getContext(), p.getNome(), Toast.LENGTH_SHORT).show();
-            }
-        });
-        recycler.setAdapter(adapter);
-        adapter.notifyDataSetChanged();
         return v;
 
     }
-
+    @Override
+    public void onResume() { /*
+    semelhante ao oncreate, mas em vez de ser criado só quando a página é criada,
+    esse roda toda vez que a página é aberta, mesmo se for pra outra página e voltar;*/
+        super.onResume();
+        loadDB();
+    }
     public void pesquisar() {
         String textnome = Nome.getText().toString();
         String textcateg = categoria.getText().toString();
@@ -114,10 +117,10 @@ public class Segundo extends Fragment {
         for (int i = 0; i < listaProdutos.size(); i++) {
             Produto p = listaProdutos.get(i);
             if (textnome.equals(p.getNome()) || textcateg.equals(p.getSabor()) || floatpreco == p.getPreco()) {
-                listaTemp.add(p);
+                listaProdutos.add(p);
             }
         }
-        adapter = new adaptador2(adapter.context, listaTemp, new adaptador2.OnItemClickListener() {//isso aqui é a interface criada
+        adapter = new adaptador2(adapter.context, listaProdutos, new adaptador2.OnItemClickListener() {//isso aqui é a interface criada
             @Override
             public void onItemClick(Produto p) { //onclick de cada cartão, num geral
                 Toast.makeText(adapter.context, p.getNome(), Toast.LENGTH_SHORT).show();
@@ -125,5 +128,33 @@ public class Segundo extends Fragment {
         });
         recycler.setAdapter(adapter);
         adapter.notifyDataSetChanged();
+    }
+    public void loadDB(){
+        listaProdutos.clear();
+        DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
+        reference.child("Produtos").addListenerForSingleValueEvent(new ValueEventListener() { //cria novos eventos
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot/*tudo de produto encontrado*/) { //quando mudado o dado, quando encontrar dado no firebase
+                for (DataSnapshot ds: snapshot.getChildren()){ //Para cada dado de Snapshot -> ds é o DataSnapshot
+                    /*children é a expansão de cada dado que tem no firebase, ex: produtos/coca-cola é uma children, categoria e preço
+                    seriam mais children dela, para chamar usaríamos reference.child("Produtos").children*/
+                    Produto p = (Produto) ds.getValue(Produto.class); //cria novo produto com base no value do snapshot. de acordo com a classe do produto do ds
+                    listaProdutos.add(p);
+                }
+                adapter = new adaptador2(getContext(), listaProdutos, new adaptador2.OnItemClickListener() {//isso aqui é a interface criada
+                    @Override
+                    public void onItemClick(Produto p) { //onclick de cada cartão, num geral
+                        Toast.makeText(adapter.context, p.getNome(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+                recycler.setAdapter(adapter);
+                adapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) { //quando cancelado
+
+            }
+        });
     }
 }
