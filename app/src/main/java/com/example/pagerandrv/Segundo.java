@@ -40,7 +40,7 @@ public class Segundo extends Fragment {
     private String mParam1;
     private String mParam2;
 
-    ArrayList<Produto> listaProdutos = new ArrayList<>();;
+    ArrayList<Produto> listaProdutos = new ArrayList<>();
     Button pesquisar;
     RecyclerView recycler;
 
@@ -107,20 +107,26 @@ public class Segundo extends Fragment {
         super.onResume();
         loadDB();
     }
-    public void pesquisar() {
+    public void pesquisar() { /*
+    ==============ERROOOOOO============
+    Erro pq ele reseta a lista dps de pesquisar e não volta;
+    se sair da page e voltar ele volta
+    */
+        ArrayList<Produto> listaProdutosTemp = listaProdutos;
         String textnome = Nome.getText().toString();
         String textcateg = categoria.getText().toString();
         float floatpreco = 0;
         if (!Preco.getText().toString().isEmpty()) {
             floatpreco = Float.parseFloat(Preco.getText().toString());
         }
-        for (int i = 0; i < listaProdutos.size(); i++) {
-            Produto p = listaProdutos.get(i);
+        for (int i = 0; i < listaProdutosTemp.size(); i++) {
+            Produto p = listaProdutosTemp.get(i);
             if (textnome.equals(p.getNome()) || textcateg.equals(p.getSabor()) || floatpreco == p.getPreco()) {
-                listaProdutos.add(p);
+                listaProdutosTemp.clear();
+                listaProdutosTemp.add(p);
             }
         }
-        adapter = new adaptador2(adapter.context, listaProdutos, new adaptador2.OnItemClickListener() {//isso aqui é a interface criada
+        adapter = new adaptador2(adapter.context, listaProdutosTemp, new adaptador2.OnItemClickListener() {//isso aqui é a interface criada
             @Override
             public void onItemClick(Produto p) { //onclick de cada cartão, num geral
                 Toast.makeText(adapter.context, p.getNome(), Toast.LENGTH_SHORT).show();
