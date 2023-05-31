@@ -102,13 +102,13 @@ public class Quarto extends Fragment {
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (!snapshot.exists()) {
                     p.salvar(); //envia para o firebase o produto
+                    Toast.makeText(getContext(), "Produto cadastrado.", Toast.LENGTH_SHORT).show();
                 } else {
                     Toast.makeText(getContext(), "O produto já foi cadastrado.", Toast.LENGTH_SHORT).show();
                 }
             }
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-
             }
         });
     }
